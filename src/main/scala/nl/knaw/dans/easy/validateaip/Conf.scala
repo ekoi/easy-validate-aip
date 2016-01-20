@@ -58,14 +58,16 @@ class Conf(args: Seq[String], props: PropertiesConfiguration) extends ScallopCon
     noshort = true,
     default = props.getString("default.fcrepo-user") match {
       case s: String => Some(s)
-      case _ => throw new RuntimeException("No fcrepo-user provided")
+      case _ => Some("")
+//      case _ => throw new RuntimeException("No fcrepo-user provided")
     })
   val password = opt[String]("fcrepo-password",
     descr = "Password to use for authentication/authorisation to the fedora service",
     noshort = true,
     default = props.getString("default.fcrepo-password") match {
       case s: String => Some(s)
-      case _ => throw new RuntimeException("No fcrepo-password provided")
+      case _ => Some("")
+      //      case _ => throw new RuntimeException("No fcrepo-password provided")
     })
 
   val fedoraServiceUrl = opt[URL]("fedora-service-url",
@@ -73,7 +75,8 @@ class Conf(args: Seq[String], props: PropertiesConfiguration) extends ScallopCon
     noshort = true,
     default = props.getString("default.fedora-service-url") match {
       case s: String => Some(new URL(s))
-      case _ => throw new RuntimeException("No fedora service URL provided")
+      case _ => Some(new URL("http://localhost:8080/fedora"))
+//      case _ => throw new RuntimeException("No fedora service URL provided")
     })
  
 
