@@ -39,6 +39,18 @@
     </scm>
   <dependencies>
     <dependency>
+      <groupId>org.rogach</groupId>
+      <artifactId>scallop_2.11</artifactId>
+      </dependency>
+    <dependency>
+      <groupId>com.yourmediashelf.fedora.client</groupId>
+      <artifactId>fedora-client-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.yourmediashelf.fedora.client</groupId>
+      <artifactId>fedora-client-messaging</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
      </dependency>
