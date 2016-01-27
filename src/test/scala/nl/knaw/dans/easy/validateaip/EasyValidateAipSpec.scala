@@ -22,25 +22,25 @@ import java.io.File
 
 
 
-class EasyValidateAipTest extends FlatSpec with Matchers {
+class EasyValidateAipSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
 
-  "validateSingleAip" should "Success" in {
+  "validateSingleAip" should "succeed" in {
     validateSingleAip(new Settings(new File("src/test/resources/simple"))).isSuccess shouldBe true
   }
 
-  it should "Failure" in {
+  it should "failed" in {
     validateSingleAip(new Settings(new File("src/test/resources/simple-invalid"))).isFailure shouldBe true
   }
 
-  it should "produce java.lang.NullPointerException" in {
+  it should "produced java.lang.NullPointerException" in {
     val thrown = intercept[java.lang.NullPointerException] {
       validateSingleAip(new Settings(new File("src/test/resources/simple-")))
     }
     thrown.isInstanceOf[java.lang.NullPointerException]
   }
 
-  it should "failure sinds the directory contains multiple files/directories." in {
+  it should "failed since the directory contains multiple files/directories." in {
    validateSingleAip(new Settings(new File("src/test/resources/simple/aip-simple"))).isFailure shouldBe true
   }
 
