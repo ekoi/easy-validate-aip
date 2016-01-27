@@ -21,4 +21,4 @@ out/
 /.project
 /.settings
 /.classpath
-/.cache
+/.cache*
