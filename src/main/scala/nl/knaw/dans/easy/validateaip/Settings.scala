@@ -18,9 +18,21 @@ package nl.knaw.dans.easy.validateaip
 import java.io.File
 import java.net.URL
 
+import org.eclipse.jgit.transport.CredentialItem.Username
+
 
 case class Settings(aipDir: File,
+                    singleAip: Boolean,
                     username: String,
                     password: String,
-                    fedoraUrl: URL) {
+                    fedoraUrl: URL,
+                    aipBaseDir: File) {
+
+  def this(aipDir : File) {
+    this(aipDir, true, "", "", new URL("http://localhost"), new File(""))
+  }
+
+  def this(username: String, password: String, fedoraUrl : URL, aipBaseDir : File)  {
+    this(new File(""), false, username, password, fedoraUrl, aipBaseDir)
+  }
 }
