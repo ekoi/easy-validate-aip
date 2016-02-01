@@ -15,34 +15,44 @@
  */
 package nl.knaw.dans.easy.validateaip
 
-import nl.knaw.dans.easy.validateaip.EasyValidateAip.validateSingleAip
+import java.net.URL
+
+import nl.knaw.dans.easy.validateaip.EasyValidateAip.{validateSingleAip, validateMultiAips}
 import org.scalatest.{Matchers, FlatSpec, FunSuite}
 
 import java.io.File
 
+import scala.util.Success
 
 
 class EasyValidateAipSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
 
   "validateSingleAip" should "succeed" in {
-    validateSingleAip(new Settings(new File("src/test/resources/simple"))).isSuccess shouldBe true
+    validateSingleAip(new File("src/test/resources/simple")).isSuccess shouldBe true
   }
 
   it should "failed" in {
-    validateSingleAip(new Settings(new File("src/test/resources/simple-invalid"))).isFailure shouldBe true
+    validateSingleAip(new File("src/test/resources/simple-invalid")).isFailure shouldBe true
   }
 
   it should "produced java.lang.NullPointerException" in {
     val thrown = intercept[java.lang.NullPointerException] {
-      validateSingleAip(new Settings(new File("src/test/resources/simple-")))
+      validateSingleAip(new File("src/test/resources/simple-"))
     }
     thrown.isInstanceOf[java.lang.NullPointerException]
   }
 
   it should "failed since the directory contains multiple files/directories." in {
-   validateSingleAip(new Settings(new File("src/test/resources/simple/aip-simple"))).isFailure shouldBe true
+   validateSingleAip(new File("src/test/resources/simple/aip-simple")).isFailure shouldBe true
   }
 
+  "validateMultiAips" should "succeed (no failed)" in {
+    validateMultiAips("src/test/resources/mock", mockFedoraUrnQueryResponse).size shouldBe 0
+  }
+
+  def mockFedoraUrnQueryResponse():List[String]={
+    List("urn:nbn:nl:ui:13-5xhe-sn", "urn:nbn:nl:ui:13-6eub-aq", "urn:nbn:nl:ui:13-6xee-rq")
+  }
 
 }

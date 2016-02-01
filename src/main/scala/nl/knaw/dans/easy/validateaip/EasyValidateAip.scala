@@ -47,32 +47,47 @@ object EasyValidateAip {
   }
   
   def validateAip(implicit s: Settings): Try[Unit] = {
-    log.debug(s"[$s] Validate bag of " + s.aipDir.getPath)
     if (s.singleAip) {
-      validateSingleAip(s)
+      validateSingleAip(s.aipDir)
     } else {
-      log.debug("Validata all the AIPs registered in an EASY Fedora 3.x repository")
-      val r = queryUrn
-      Success(Unit)
+      val queryResult = queryUrn
+      if(queryResult.isSuccess) {
+        val urns = queryResult.get
+        log.debug(s"Number of urn's ${urns.size}")
+        validateMultiAips(s.aipBaseDir.getPath, urns)
+        Success(Unit)
+      } else Failure(new RuntimeException("Failed to query fedora resource index."))
     }
   }
 
-  def validateSingleAip(s: Settings): Try[Unit] = {
+  def validateSingleAip(f:File): Try[Unit] = {
     log.debug("Validate a single AIP.")
-    if (s.aipDir.list().size != 1) Failure(new RuntimeException(s"${s.aipDir} directory contains multiple files/directories."))
+    log.debug(s"Validate bag of ${f.getPath}")
+    if (f.list().size != 1)
+      Failure(new RuntimeException(s"${f.getPath} directory contains multiple files/directories."))
     else {
-      val bag = bagFactory.createBag(s.aipDir.listFiles()(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
-      val validationResult: SimpleResult = bag.verifyValid
-
+      val bag = bagFactory.createBag(f.listFiles()(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
+     val validationResult: SimpleResult = bag.verifyValid()
       if (validationResult.isSuccess) Success(Unit)
-
-      else Failure(new RuntimeException(s"${s.aipDir} is not valid."))
-    }
+      else Failure(new RuntimeException(s"${f.getPath} is not valid."))
   }
 
-  def queryUrn()(implicit s: Settings): Try[List[String]] = Try {
-    val fedoraCredentials = new FedoraCredentials(s.fedoraUrl, s.username, s.password)
 
+
+  }
+  def validateMultiAips(aipBaseDir: String, urns: List[String]) : List[String] = {
+    log.debug("Validate multiple AIPs")
+    log.debug("Validate all the AIPs registered in an EASY Fedora 3.x repository")
+
+    for {
+      urn <- urns
+      validate = validateSingleAip(new File(s"$aipBaseDir/$urn"))
+      if validate.isFailure
+    } yield urn
+  }
+
+  def queryUrn(implicit s: Settings): Try[List[String]] = Try {
+    val fedoraCredentials = new FedoraCredentials(s.fedoraUrl, s.username, s.password)
     val url = s"${s.fedoraUrl}/risearch"
     val response = Http(url)
       .timeout(connTimeoutMs = 10000, readTimeoutMs = 50000)
@@ -83,10 +98,9 @@ object EasyValidateAip {
         s"""
            |select ?s
            |from <#ri>
-           |where { ?s <http://dans.knaw.nl/ontologies/relations#storedInDarkArchive> true  }
+           |where { ?s <http://dans.knaw.nl/ontologies/relations#storedInDarkArchive> true  } limit 10
         """.stripMargin)
       .asString
-    log.debug(s"Response code: $response.code")
     if (response.code != 200)
       throw new RuntimeException(s"Failed to query fedora resource index ($url), response code: ${response.code}")
     response.body.lines.toList.drop(1)
