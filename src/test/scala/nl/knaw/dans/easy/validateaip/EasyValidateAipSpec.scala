@@ -36,13 +36,6 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
     validateSingleAip(new File("src/test/resources/single/invalid/aip-simple-invalid")).isFailure shouldBe true
   }
 
-  it should "produced java.lang.NullPointerException" in {
-    val thrown = intercept[java.lang.NullPointerException] {
-      validateSingleAip(new File("src/test/resources/simple-"))
-    }
-    thrown.isInstanceOf[java.lang.NullPointerException]
-  }
-
   it should "failed. The directory is empty" in {
    validateSingleAip(new File("src/test/resources/single/invalid/empty-dir")).isFailure shouldBe true
   }
