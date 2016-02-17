@@ -22,17 +22,14 @@ import org.eclipse.jgit.transport.CredentialItem.Username
 
 
 case class Settings(aipDir: File,
-                    singleAip: Boolean,
-                    username: String,
-                    password: String,
-                    fedoraUrl: URL,
-                    aipBaseDir: File) {
-
-  def this(aipDir : File) {
-    this(aipDir, true, "", "", new URL("http://localhost"), new File(""))
-  }
+                    singleAip: Boolean = true,
+                    username: String = "",
+                    password: String = "",
+                    fedoraUrl: URL = new URL("http://localhost:8080"),
+                    aipBaseDir: File = new File("")) {
 
   def this(username: String, password: String, fedoraUrl : URL, aipBaseDir : File)  {
     this(new File(""), false, username, password, fedoraUrl, aipBaseDir)
   }
+
 }

@@ -22,18 +22,19 @@ import gov.loc.repository.bagit.BagFactory
 import gov.loc.repository.bagit.utilities.SimpleResult
 import scala.util.{Failure, Success, Try}
 import org.apache.commons.configuration.PropertiesConfiguration
+import javax.ws.rs.core.Response.Status
 import org.slf4j.LoggerFactory
 import scalaj.http.Http
+import nl.knaw.dans.easy.validateaip.{CommandLineOptions => cmd}
 
 
 object EasyValidateAip {
-  val log = LoggerFactory.getLogger(getClass)
+  implicit val log = LoggerFactory.getLogger(getClass)
   implicit val bagFactory = new BagFactory
 
   def main(args: Array[String]) {
-//    val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-//    val conf = new Conf(args, props)
-    implicit val settings: Settings = CommandLineOptions.parse(args)
+    log.debug("Starting application.")
+    implicit val settings: Settings = cmd.parse(args)
 
     run match {
       case Success(_) => log.info("AIP validation SUCCESS")
@@ -53,28 +54,37 @@ object EasyValidateAip {
       val queryResult = queryUrn
       if(queryResult.isSuccess) {
         val urns = queryResult.get
-        log.debug(s"Number of urn's ${urns.size}")
-        validateMultiAips(s.aipBaseDir.getPath, urns)
-        Success(Unit)
+        log.info(s"Number of urns to be validated: ${urns.size}")
+        val invalidUrns = validateMultiAips(s.aipBaseDir.getPath, urns)
+        log.info(s"Number of invalid urns: ${invalidUrns.size}")
+        if (invalidUrns.nonEmpty)
+          Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
+        else
+          Success(Unit)
       } else Failure(new RuntimeException("Failed to query fedora resource index."))
     }
   }
 
   def validateSingleAip(f:File): Try[Unit] = {
-    log.debug("Validate a single AIP.")
-    log.debug(s"Validate bag of ${f.getPath}")
-    if (f.list().size != 1)
-      Failure(new RuntimeException(s"${f.getPath} directory contains multiple files/directories."))
-    else {
-      val bag = bagFactory.createBag(f.listFiles()(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
-     val validationResult: SimpleResult = bag.verifyValid()
+    log.info(s"Validate bag of ${f.getPath}")
+    if (!f.exists()) {
+      log.info(s"${f.getPath} doesn't exist.")
+      return Failure(new RuntimeException(s"${f.getPath} doesn't exist."))
+    }
+    val directoryToValidate = f.listFiles().filter(_.isDirectory) //in urn:nbn:xxx directory contains deposit.repositories file, ignore it.
+    if (directoryToValidate.isEmpty)
+      Failure(new RuntimeException(s"${f.getPath} directory is empty."))
+    else if (directoryToValidate.length == 1) {
+      val bag = bagFactory.createBag(directoryToValidate(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
+      val validationResult: SimpleResult = bag.verifyValid()
       if (validationResult.isSuccess) Success(Unit)
       else Failure(new RuntimeException(s"${f.getPath} is not valid."))
+    }
+    else
+      Failure(new RuntimeException(s"${f.getPath} directory contains multiple directories."))
   }
 
 
-
-  }
   def validateMultiAips(aipBaseDir: String, urns: List[String]) : List[String] = {
     log.debug("Validate multiple AIPs")
     log.debug("Validate all the AIPs registered in an EASY Fedora 3.x repository")
@@ -89,6 +99,7 @@ object EasyValidateAip {
   def queryUrn(implicit s: Settings): Try[List[String]] = Try {
     val fedoraCredentials = new FedoraCredentials(s.fedoraUrl, s.username, s.password)
     val url = s"${s.fedoraUrl}/risearch"
+    log.debug(s"fedora server url: $url")
     val response = Http(url)
       .timeout(connTimeoutMs = 10000, readTimeoutMs = 50000)
       .param("type", "tuples")
@@ -96,13 +107,16 @@ object EasyValidateAip {
       .param("format", "CSV")
       .param("query",
         s"""
-           |select ?s
+           |select ?pid
            |from <#ri>
-           |where { ?s <http://dans.knaw.nl/ontologies/relations#storedInDarkArchive> true  } limit 10
+           |where { ?s <http://dans.knaw.nl/ontologies/relations#storedInDarkArchive> 'true' .
+           |        ?s <http://dans.knaw.nl/ontologies/relations#hasPid> ?pid . }
         """.stripMargin)
       .asString
-    if (response.code != 200)
+
+    if (!response.code.equals(Status.OK.getStatusCode))
       throw new RuntimeException(s"Failed to query fedora resource index ($url), response code: ${response.code}")
+
     response.body.lines.toList.drop(1)
       .map(_.replace("info:fedora/", ""))
   }

@@ -17,14 +17,44 @@ package nl.knaw.dans.easy.validateaip
 
 import java.io.{File}
 import java.net.URL
+import java.util.Properties
 
+
+import com.typesafe.config.{Config, ConfigFactory}
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory
 
 import scala.util.Failure
 
-class CommandLineOptions (args: Array[String]) extends ScallopConf(args){
+object CommandLineOptions {
   val log = LoggerFactory.getLogger(getClass)
+  val conf = ConfigFactory.load
+  log.debug("Parsing command line ...")
+
+  def parse(args: Array[String]): Settings = {
+    val opts = new ScallopCommandLine(conf, args)
+
+    if (args.length == 1) {
+      log.debug("Validate Single AIP...")
+      val aipDir = opts.aipDirectory.apply()
+      Settings(aipDir)
+    }
+    else {
+      log.debug("Validate Multi AIPs...")
+      val fedoraUrl: URL = opts.fedoraServiceUrl()
+      println(fedoraUrl)
+      val username: String = opts.username.get.getOrElse(askUsername(fedoraUrl.toString))
+      val password: String = opts.password.get.getOrElse(askPassword(username,fedoraUrl.toString))
+
+      val aipBaseDir = opts.aipBaseDirectory()
+
+      new Settings(username, password, fedoraUrl, aipBaseDir)
+    }
+  }
+
+class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(args) {
+  printedName = "process-multi-deposit"
+  version(s"$printedName ${Version()}")
   banner("""
            |Validate one or more AIPs in (dark) archival storage.
            |
@@ -47,45 +77,51 @@ class CommandLineOptions (args: Array[String]) extends ScallopConf(args){
     trailArg[File](
       name = "aip-directory",
       descr = "Directory that will be validated.",
-      required = false)(shouldExist)
+      required = false)
 
-  val username = opt[String]("fcrepo-user", noshort = true, descr = "Username to use for authentication/authorisation to the fedora service.")
-  val password = opt[String]("fcrepo-password", noshort = true, descr = "Password to use for authentication/authorisation to the fedora service")
+  //TODO: Validate the given directory parameter.
+//  validateOpt(aipDirectory)(_.map(file =>
+//      if (!file.isDirectory)
+//        Left(s"Not a directory '$file'")
+//      else
+//        Right(()))
+//    .getOrElse(Left("Could not parse parameter aip-directory")))
+
+  val username = opt[String]("fcrepo-user",
+                    noshort = true,
+                    descr = "Username to use for authentication/authorisation to the fedora service.",
+                    default = Some(conf.getString("default.fcrepo-user")))
+  val password = opt[String]("fcrepo-password",
+                    noshort = true,
+                    descr = "Password to use for authentication/authorisation to the fedora service",
+                    default = Some(conf.getString("default.fcrepo-password")))
+
   val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
     required = false,
-    descr = "URL of Fedora Commons Repository Server to connect to ")
-
-//  ,
-//    default = Some(new URL("http://localhost:8080/fedora")))
+    descr = "URL of Fedora Commons Repository Server to connect to ",
+    default = Some(new URL(conf.getString("default.fedora-service-url"))))
 
   val aipBaseDirectory =
     trailArg[File](
       name = "aip-base-directory",
-      required = false)(shouldExist)
+      required = false,
+      default = Some(new File(conf.getString("default.aip-base-directory"))))
+  //TODO: Validate the given directory parameter.
+//  validateOpt(aipBaseDirectory)(_.map(file =>
+//    if (!file.isDirectory)
+//      Left(s"Not a directory '$file'")
+//    else
+//      Right(()))
+//    .getOrElse(Left("Could not parse parameter aip-base-directory")))
 
   footer("")
 }
 
-object CommandLineOptions {
-  def parse(args: Array[String]): Settings = {
-    val opts = new CommandLineOptions(args)
-    if (args.contains("--help"))
-      Array[String]()
-    if (args.size == 0) {
-      print("No arguments provided. More info: easy-validate-aip --help")
-      throw new RuntimeException("No arguments provided. More info: easy-validate-aip --help")
-    }else if (args.length == 1) {
-      val aipDir = opts.aipDirectory.apply()
-      new Settings(aipDir)
-    }
-    else {
-      val fedoraUrl: URL = opts.fedoraServiceUrl.apply()
-      val username: String = opts.username.get.getOrElse(askUsername(fedoraUrl.toString))
-      val password: String = opts.password.get.getOrElse(askPassword(username,fedoraUrl.toString))
-
-      val aipBaseDir = opts.aipBaseDirectory.apply()
-
-      new Settings(username, password, fedoraUrl, aipBaseDir)
+  object Version {
+    def apply(): String = {
+      val properties = new Properties()
+      properties.load(getClass.getResourceAsStream("/Version.properties"))
+      properties.getProperty("easy-validate-aip.version")
     }
   }
 

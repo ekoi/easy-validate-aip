@@ -29,11 +29,11 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
 
   "validateSingleAip" should "succeed" in {
-    validateSingleAip(new File("src/test/resources/simple")).isSuccess shouldBe true
+    validateSingleAip(new File("src/test/resources/single/valid")).isSuccess shouldBe true
   }
 
   it should "failed" in {
-    validateSingleAip(new File("src/test/resources/simple-invalid")).isFailure shouldBe true
+    validateSingleAip(new File("src/test/resources/single/invalid/aip-simple-invalid")).isFailure shouldBe true
   }
 
   it should "produced java.lang.NullPointerException" in {
@@ -43,16 +43,27 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
     thrown.isInstanceOf[java.lang.NullPointerException]
   }
 
-  it should "failed since the directory contains multiple files/directories." in {
-   validateSingleAip(new File("src/test/resources/simple/aip-simple")).isFailure shouldBe true
+  it should "failed. The directory is empty" in {
+   validateSingleAip(new File("src/test/resources/single/invalid/empty-dir")).isFailure shouldBe true
   }
 
-  "validateMultiAips" should "succeed (no failed)" in {
-    validateMultiAips("src/test/resources/mock", mockFedoraUrnQueryResponse).size shouldBe 0
+  it should "failed. The directory contains multiple directories" in {
+    validateSingleAip(new File("src/test/resources/single/invalid/multiple-dirs")).isFailure shouldBe true
   }
 
-  def mockFedoraUrnQueryResponse():List[String]={
+  "validateMultiAips" should "succeed" in {
+    validateMultiAips("src/test/resources/multiple/valid-bagit", mockUrnQueryResponseValidBagit).size shouldBe 0
+  }
+
+  it should "failed" in {
+    validateMultiAips("src/test/resources/multiple/invalid-bagit", mockUrnQueryResponseInvalidBagit).size shouldBe 2
+  }
+
+  def mockUrnQueryResponseValidBagit():List[String]={
     List("urn:nbn:nl:ui:13-5xhe-sn", "urn:nbn:nl:ui:13-6eub-aq", "urn:nbn:nl:ui:13-6xee-rq")
   }
 
+  def mockUrnQueryResponseInvalidBagit():List[String]={
+    List("urn:nbn:nl:ui:13-axz88-sa", "urn:nbn:nl:ui:13-10imka-12")
+  }
 }
