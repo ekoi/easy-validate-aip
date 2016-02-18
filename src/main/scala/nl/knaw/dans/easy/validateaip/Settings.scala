@@ -18,8 +18,6 @@ package nl.knaw.dans.easy.validateaip
 import java.io.File
 import java.net.URL
 
-import org.eclipse.jgit.transport.CredentialItem.Username
-
 
 case class Settings(aipDir: File,
                     singleAip: Boolean = true,

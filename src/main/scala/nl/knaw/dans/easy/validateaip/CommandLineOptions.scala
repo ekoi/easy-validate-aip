@@ -24,8 +24,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory
 
-import scala.util.Failure
-
 object CommandLineOptions {
   val log = LoggerFactory.getLogger(getClass)
   val conf = ConfigFactory.load

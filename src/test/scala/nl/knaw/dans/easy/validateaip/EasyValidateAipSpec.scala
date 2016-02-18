@@ -22,8 +22,6 @@ import org.scalatest.{Matchers, FlatSpec, FunSuite}
 
 import java.io.File
 
-import scala.util.Success
-
 
 class EasyValidateAipSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")

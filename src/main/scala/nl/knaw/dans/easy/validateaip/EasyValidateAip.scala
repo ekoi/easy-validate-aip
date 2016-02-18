@@ -21,7 +21,6 @@ import com.yourmediashelf.fedora.client.FedoraCredentials
 import gov.loc.repository.bagit.BagFactory
 import gov.loc.repository.bagit.utilities.SimpleResult
 import scala.util.{Failure, Success, Try}
-import org.apache.commons.configuration.PropertiesConfiguration
 import javax.ws.rs.core.Response.Status
 import org.slf4j.LoggerFactory
 import scalaj.http.Http
