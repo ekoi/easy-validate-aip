@@ -30,15 +30,15 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
     validateSingleAip(new File("src/test/resources/single/valid")).isSuccess shouldBe true
   }
 
-  it should "failed" in {
+  it should "fail" in {
     validateSingleAip(new File("src/test/resources/single/invalid/aip-simple-invalid")).isFailure shouldBe true
   }
 
-  it should "failed. The directory is empty" in {
+  it should "fail. The directory is empty" in {
    validateSingleAip(new File("src/test/resources/single/invalid/empty-dir")).isFailure shouldBe true
   }
 
-  it should "failed. The directory contains multiple directories" in {
+  it should "fail. The directory contains multiple directories" in {
     validateSingleAip(new File("src/test/resources/single/invalid/multiple-dirs")).isFailure shouldBe true
   }
 
@@ -46,7 +46,7 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
     validateMultiAips("src/test/resources/multiple/valid-bagit", mockUrnQueryResponseValidBagit).size shouldBe 0
   }
 
-  it should "failed" in {
+  it should "fail" in {
     validateMultiAips("src/test/resources/multiple/invalid-bagit", mockUrnQueryResponseInvalidBagit).size shouldBe 2
   }
 

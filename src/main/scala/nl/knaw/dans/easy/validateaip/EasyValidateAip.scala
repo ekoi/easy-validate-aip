@@ -50,17 +50,15 @@ object EasyValidateAip {
     if (s.singleAip) {
       validateSingleAip(s.aipDir)
     } else {
-      val queryResult = queryUrn
-      if(queryResult.isSuccess) {
-        val urns = queryResult.get
+      queryUrn.map(urns => {
         log.info(s"Number of urns to be validated: ${urns.size}")
         val invalidUrns = validateMultiAips(s.aipBaseDir.getPath, urns)
         log.info(s"Number of invalid urns: ${invalidUrns.size}")
-        if (invalidUrns.nonEmpty)
-          Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
+        if (invalidUrns.isEmpty)
+          Success()
         else
-          Success(Unit)
-      } else Failure(new RuntimeException("Failed to query fedora resource index."))
+          Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
+      }).getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
     }
   }
 
@@ -96,7 +94,6 @@ object EasyValidateAip {
   }
 
   def queryUrn(implicit s: Settings): Try[List[String]] = Try {
-    val fedoraCredentials = new FedoraCredentials(s.fedoraUrl, s.username, s.password)
     val url = s"${s.fedoraUrl}/risearch"
     log.debug(s"fedora server url: $url")
     val response = Http(url)

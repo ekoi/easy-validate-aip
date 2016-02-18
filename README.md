@@ -7,7 +7,7 @@ SYNOPSIS
 --------
 
     easy-validate-aip <aip-directory>
-    easy-validate-aip --fcrepo-user <user> --fcrepo-password <password> <Fedora service URL> <aip-base-directory>
+    easy-validate-aip <Fedora service URL> <aip-base-directory>
     
 DESCRIPTION
 -----------

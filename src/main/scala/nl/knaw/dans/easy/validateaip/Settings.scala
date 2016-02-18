@@ -21,13 +21,11 @@ import java.net.URL
 
 case class Settings(aipDir: File,
                     singleAip: Boolean = true,
-                    username: String = "",
-                    password: String = "",
                     fedoraUrl: URL = new URL("http://localhost:8080"),
                     aipBaseDir: File = new File("")) {
 
-  def this(username: String, password: String, fedoraUrl : URL, aipBaseDir : File)  {
-    this(new File(""), false, username, password, fedoraUrl, aipBaseDir)
+  def this(fedoraUrl : URL, aipBaseDir : File)  {
+    this(new File(""), false,fedoraUrl, aipBaseDir)
   }
 
 }

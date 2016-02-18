@@ -40,12 +40,10 @@ object CommandLineOptions {
     else {
       log.debug("Validate Multi AIPs...")
       val fedoraUrl: URL = opts.fedoraServiceUrl()
-      val username: String = opts.username.get.getOrElse(askUsername(fedoraUrl.toString))
-      val password: String = opts.password.get.getOrElse(askPassword(username,fedoraUrl.toString))
 
       val aipBaseDir = opts.aipBaseDirectory()
 
-      new Settings(username, password, fedoraUrl, aipBaseDir)
+      new Settings(fedoraUrl, aipBaseDir)
     }
   }
 
@@ -84,15 +82,6 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
 //        Right(()))
 //    .getOrElse(Left("Could not parse parameter aip-directory")))
 
-  val username = opt[String]("fcrepo-user",
-                    noshort = true,
-                    descr = "Username to use for authentication/authorisation to the fedora service.",
-                    default = Some(conf.getString("default.fcrepo-user")))
-  val password = opt[String]("fcrepo-password",
-                    noshort = true,
-                    descr = "Password to use for authentication/authorisation to the fedora service",
-                    default = Some(conf.getString("default.fcrepo-password")))
-
   val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
     required = false,
     descr = "URL of Fedora Commons Repository Server to connect to ",
@@ -120,15 +109,5 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
       properties.load(getClass.getResourceAsStream("/Version.properties"))
       properties.getProperty("easy-validate-aip.version")
     }
-  }
-
-  def askUsername(url: String): String = {
-    print(s"Username for $url: ")
-    System.console().readLine()
-  }
-
-  def askPassword(user: String, url: String): String = {
-    print(s"Password for $user on $url: ")
-    System.console.readPassword().mkString
   }
 }
