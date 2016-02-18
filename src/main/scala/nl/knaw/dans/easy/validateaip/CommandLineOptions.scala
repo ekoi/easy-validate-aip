@@ -42,7 +42,6 @@ object CommandLineOptions {
     else {
       log.debug("Validate Multi AIPs...")
       val fedoraUrl: URL = opts.fedoraServiceUrl()
-      println(fedoraUrl)
       val username: String = opts.username.get.getOrElse(askUsername(fedoraUrl.toString))
       val password: String = opts.password.get.getOrElse(askPassword(username,fedoraUrl.toString))
 
