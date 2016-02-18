@@ -21,11 +21,11 @@
    <parent>
        <groupId>nl.knaw.dans.shared</groupId>
        <artifactId>dans-scala-prototype</artifactId>
-       <version>1.18</version>
+       <version>1.21</version>
    </parent>
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-validate-aip</artifactId>
-    <name>EASY Validate Aip</name>
+    <name>EASY Validate AIP</name>
     <version>1.x-SNAPSHOT</version>
     <inceptionYear>2015-2016</inceptionYear>
     <description>Validate one or more AIPs in (dark) archival storage</description>
@@ -74,16 +74,8 @@
         <scope>compile</scope>
     </dependency>
     <dependency>
-        <groupId>org.eclipse.jgit</groupId>
-        <artifactId>org.eclipse.jgit</artifactId>
-    </dependency>
-      <dependency>
-          <groupId>com.typesafe</groupId>
-          <artifactId>config</artifactId>
-      </dependency>
-    <dependency>
-      <groupId>io.reactivex</groupId>
-      <artifactId>rxscala_2.11</artifactId>
+        <groupId>com.typesafe</groupId>
+        <artifactId>config</artifactId>
     </dependency>
     <dependency>
         <groupId>commons-configuration</groupId>
