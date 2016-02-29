@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.validateaip
 
 import java.io._
+import java.net.URL
 
 import gov.loc.repository.bagit.BagFactory
 import gov.loc.repository.bagit.utilities.SimpleResult
@@ -46,18 +47,16 @@ object EasyValidateAip {
   }
   
   def validateAip(implicit s: Settings): Try[Result] = {
-    if (s.singleAip) {
-      validateSingleAip(s.aipDir)
-    } else {
-      queryUrn.map(urns => {
+    s match {
+      case SingleSettings(aipDir) => validateSingleAip(aipDir)
+      case MultipleSettings(fedoraUrl, aipBaseDir) => queryUrn(fedoraUrl).map(urns => {
         log.info(s"Number of urns to be validated: ${urns.size}")
-        val invalidUrns = validateMultiAips(s.aipBaseDir.getPath, urns)
+        val invalidUrns = validateMultiAips(aipBaseDir.getPath, urns)
         log.info(s"Number of invalid urns: ${invalidUrns.size}")
         if (invalidUrns.isEmpty)
-          Success(Result(true))
+          Success(Result(valid = true))
         else
-          //Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
-          Success(Result(false, invalidUrns))
+          Success(Result(valid = false, invalidUrns))
       }).getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
     }
   }
@@ -74,8 +73,8 @@ object EasyValidateAip {
     else if (directoryToValidate.length == 1) {
       val bag = bagFactory.createBag(directoryToValidate(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
       val validationResult: SimpleResult = bag.verifyValid()
-      if (validationResult.isSuccess) Success(Result(true))
-      else Success(Result(false, List(f.getPath)))
+      if (validationResult.isSuccess) Success(Result(valid = true))
+      else Success(Result(valid = false, List(f.getPath)))
     }
     else
       Failure(new RuntimeException(s"${f.getPath} directory contains multiple directories."))
@@ -93,8 +92,8 @@ object EasyValidateAip {
     } yield urn
   }
 
-  def queryUrn(implicit s: Settings): Try[List[String]] = Try {
-    val url = s"${s.fedoraUrl}/risearch"
+  def queryUrn(fedoraUrl: URL): Try[List[String]] = Try {
+    val url = s"$fedoraUrl/risearch"
     log.debug(s"fedora server url: $url")
     val response = Http(url)
       .timeout(connTimeoutMs = 10000, readTimeoutMs = 50000)

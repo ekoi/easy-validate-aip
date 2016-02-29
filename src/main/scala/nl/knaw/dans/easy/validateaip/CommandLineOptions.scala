@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.validateaip
 
-import java.io.{File}
+import java.io.File
 import java.net.URL
 import java.util.Properties
 
@@ -34,16 +34,16 @@ object CommandLineOptions {
 
     if (args.length == 1) {
       log.debug("Validate Single AIP...")
-      val aipDir = opts.aipDirectory.apply()
-      Settings(aipDir)
+      val aipDir = opts.aipDirectory()
+      SingleSettings(aipDir)
     }
     else {
-      log.debug("Validate Multi AIPs...")
+      log.debug("Validate Multiple AIPs...")
       val fedoraUrl: URL = opts.fedoraServiceUrl()
 
       val aipBaseDir = opts.aipBaseDirectory()
 
-      new Settings(fedoraUrl, aipBaseDir)
+      new MultipleSettings(fedoraUrl, aipBaseDir)
     }
   }
 
@@ -68,7 +68,7 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
     }
     new File(f)
   })
-  val aipDirectory =
+  lazy val aipDirectory =
     trailArg[File](
       name = "aip-directory",
       descr = "Directory that will be validated.",
@@ -82,12 +82,12 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
 //        Right(()))
 //    .getOrElse(Left("Could not parse parameter aip-directory")))
 
-  val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
+  lazy val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
     required = false,
     descr = "URL of Fedora Commons Repository Server to connect to ",
     default = Some(new URL(conf.getString("default.fedora-service-url"))))
 
-  val aipBaseDirectory =
+  lazy val aipBaseDirectory =
     trailArg[File](
       name = "aip-base-directory",
       required = false,
