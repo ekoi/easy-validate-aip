@@ -18,14 +18,6 @@ package nl.knaw.dans.easy.validateaip
 import java.io.File
 import java.net.URL
 
-
-case class Settings(aipDir: File,
-                    singleAip: Boolean = true,
-                    fedoraUrl: URL = new URL("http://localhost:8080"),
-                    aipBaseDir: File = new File("")) {
-
-  def this(fedoraUrl : URL, aipBaseDir : File)  {
-    this(new File(""), false,fedoraUrl, aipBaseDir)
-  }
-
-}
+trait Settings
+case class SingleSettings(aipDir: File) extends Settings
+case class MultipleSettings(fedoraUrl: URL, aipBaseDir: File) extends Settings
