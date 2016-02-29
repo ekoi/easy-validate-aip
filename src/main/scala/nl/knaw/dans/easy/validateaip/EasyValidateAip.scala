@@ -17,7 +17,6 @@ package nl.knaw.dans.easy.validateaip
 
 import java.io._
 
-import com.yourmediashelf.fedora.client.FedoraCredentials
 import gov.loc.repository.bagit.BagFactory
 import gov.loc.repository.bagit.utilities.SimpleResult
 import scala.util.{Failure, Success, Try}
@@ -41,12 +40,12 @@ object EasyValidateAip {
     }
   }
 
-  def run(implicit s: Settings): Try[Unit] = {
+  def run(implicit s: Settings): Try[Result] = {
     log.debug(s"Settings = $s")
     validateAip
   }
   
-  def validateAip(implicit s: Settings): Try[Unit] = {
+  def validateAip(implicit s: Settings): Try[Result] = {
     if (s.singleAip) {
       validateSingleAip(s.aipDir)
     } else {
@@ -55,27 +54,28 @@ object EasyValidateAip {
         val invalidUrns = validateMultiAips(s.aipBaseDir.getPath, urns)
         log.info(s"Number of invalid urns: ${invalidUrns.size}")
         if (invalidUrns.isEmpty)
-          Success()
+          Success(Result(true))
         else
-          Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
+          //Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
+          Success(Result(false, invalidUrns))
       }).getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
     }
   }
 
-  def validateSingleAip(f:File): Try[Unit] = {
+  def validateSingleAip(f:File): Try[Result] = {
     log.info(s"Validate bag of ${f.getPath}")
     if (!f.exists()) {
       log.info(s"${f.getPath} doesn't exist.")
       return Failure(new RuntimeException(s"${f.getPath} doesn't exist."))
     }
-    val directoryToValidate = f.listFiles().filter(_.isDirectory) //in urn:nbn:xxx directory contains deposit.repositories file, ignore it.
+    val directoryToValidate = f.listFiles().filter(_.isDirectory) //in urn:nbn:xxx directory contains  deposit.properties file, ignore it.
     if (directoryToValidate.isEmpty)
       Failure(new RuntimeException(s"${f.getPath} directory is empty."))
     else if (directoryToValidate.length == 1) {
       val bag = bagFactory.createBag(directoryToValidate(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
       val validationResult: SimpleResult = bag.verifyValid()
-      if (validationResult.isSuccess) Success(Unit)
-      else Failure(new RuntimeException(s"${f.getPath} is not valid."))
+      if (validationResult.isSuccess) Success(Result(true))
+      else Success(Result(false, List(f.getPath)))
     }
     else
       Failure(new RuntimeException(s"${f.getPath} directory contains multiple directories."))
@@ -116,4 +116,7 @@ object EasyValidateAip {
     response.body.lines.toList.drop(1)
       .map(_.replace("info:fedora/", ""))
   }
+
+
+  case class Result(valid: Boolean, invalidAips: List[String] = List())
 }
