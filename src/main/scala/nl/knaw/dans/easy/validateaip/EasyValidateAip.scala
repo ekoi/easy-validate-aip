@@ -1,21 +1,22 @@
 /**
- * Copyright (C) 2015-2016 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2015-2016 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *         http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package nl.knaw.dans.easy.validateaip
 
 import java.io._
+import java.net.URL
 
 import gov.loc.repository.bagit.BagFactory
 import gov.loc.repository.bagit.utilities.SimpleResult
@@ -44,20 +45,18 @@ object EasyValidateAip {
     log.debug(s"Settings = $s")
     validateAip
   }
-  
+
   def validateAip(implicit s: Settings): Try[Result] = {
-    if (s.singleAip) {
-      validateSingleAip(s.aipDir)
-    } else {
-      queryUrn.map(urns => {
+    s match {
+      case SingleSettings(aipDir) => validateSingleAip(aipDir)
+      case MultipleSettings(fedoraUrl, aipBaseDir) => queryUrn(fedoraUrl).map(urns => {
         log.info(s"Number of urns to be validated: ${urns.size}")
-        val invalidUrns = validateMultiAips(s.aipBaseDir.getPath, urns)
+        val invalidUrns = validateMultiAips(aipBaseDir.getPath, urns)
         log.info(s"Number of invalid urns: ${invalidUrns.size}")
         if (invalidUrns.isEmpty)
-          Success(Result(true))
+          Success(Result(valid = true))
         else
-          //Failure(new RuntimeException(s"The following directories are invalid bagit: \n$invalidUrns "))
-          Success(Result(false, invalidUrns))
+          Success(Result(valid = false, invalidUrns))
       }).getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
     }
   }
@@ -74,8 +73,8 @@ object EasyValidateAip {
     else if (directoryToValidate.length == 1) {
       val bag = bagFactory.createBag(directoryToValidate(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
       val validationResult: SimpleResult = bag.verifyValid()
-      if (validationResult.isSuccess) Success(Result(true))
-      else Success(Result(false, List(f.getPath)))
+      if (validationResult.isSuccess) Success(Result(valid = true))
+      else Success(Result(valid = false, List(f.getPath)))
     }
     else
       Failure(new RuntimeException(s"${f.getPath} directory contains multiple directories."))
@@ -93,8 +92,8 @@ object EasyValidateAip {
     } yield urn
   }
 
-  def queryUrn(implicit s: Settings): Try[List[String]] = Try {
-    val url = s"${s.fedoraUrl}/risearch"
+  def queryUrn(fedoraUrl: URL): Try[List[String]] = Try {
+    val url = s"$fedoraUrl/risearch"
     log.debug(s"fedora server url: $url")
     val response = Http(url)
       .timeout(connTimeoutMs = 10000, readTimeoutMs = 50000)
