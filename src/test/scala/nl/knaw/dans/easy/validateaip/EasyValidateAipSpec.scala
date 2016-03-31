@@ -46,10 +46,6 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
     validateMultiAips("src/test/resources/multiple/valid-bagit", mockUrnQueryResponseValidBagit).size shouldBe 0
   }
 
-  it should "fail" in {
-    validateMultiAips("src/test/resources/multiple/invalid-bagit", mockUrnQueryResponseInvalidBagit).size shouldBe 2
-  }
-
   def mockUrnQueryResponseValidBagit():List[String]={
     List("urn:nbn:nl:ui:13-5xhe-sn", "urn:nbn:nl:ui:13-6eub-aq", "urn:nbn:nl:ui:13-6xee-rq")
   }

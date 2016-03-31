@@ -36,7 +36,8 @@ object EasyValidateAip {
     implicit val settings: Settings = cmd.parse(args)
 
     run match {
-      case Success(_) => log.info("AIP validation SUCCESS")
+      case Success(Result(true, _)) => log.info("AIP validation SUCCESS")
+      case Success(Result(false, failures)) => log.info(s"The following validations failed: ${failures.mkString(", ")}")
       case Failure(t) => log.error("AIP validation FAIL", t)
     }
   }
