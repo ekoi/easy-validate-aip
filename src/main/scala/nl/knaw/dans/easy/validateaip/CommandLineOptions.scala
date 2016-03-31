@@ -26,11 +26,12 @@ import org.slf4j.LoggerFactory
 
 object CommandLineOptions {
   val log = LoggerFactory.getLogger(getClass)
-  val conf = ConfigFactory.load
+  lazy val conf = ConfigFactory.load
   log.debug("Parsing command line ...")
 
   def parse(args: Array[String]): Settings = {
-    val opts = new ScallopCommandLine(conf, args)
+    val
+    opts = new ScallopCommandLine(conf, args)
 
     if (args.length == 1) {
       log.debug("Validate Single AIP...")
