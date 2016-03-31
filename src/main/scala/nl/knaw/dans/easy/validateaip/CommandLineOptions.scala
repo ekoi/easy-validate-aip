@@ -47,7 +47,7 @@ object CommandLineOptions {
     }
   }
 
-class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(args) {
+class ScallopCommandLine(conf: => Config, args: Array[String]) extends ScallopConf(args) {
   printedName = "process-multi-deposit"
   version(s"$printedName ${Version()}")
   banner("""
@@ -67,14 +67,6 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
       descr = "Directory that will be validated.",
       required = false)
 
-  //TODO: Validate the given directory parameter.
-//  validateOpt(aipDirectory)(_.map(file =>
-//      if (!file.isDirectory)
-//        Left(s"Not a directory '$file'")
-//      else
-//        Right(()))
-//    .getOrElse(Left("Could not parse parameter aip-directory")))
-
   lazy val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
     required = false,
     descr = "URL of Fedora Commons Repository Server to connect to ",
@@ -85,13 +77,6 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
       name = "aip-base-directory",
       required = false,
       default = Some(new File(conf.getString("default.aip-base-directory"))))
-  //TODO: Validate the given directory parameter.
-//  validateOpt(aipBaseDirectory)(_.map(file =>
-//    if (!file.isDirectory)
-//      Left(s"Not a directory '$file'")
-//    else
-//      Right(()))
-//    .getOrElse(Left("Could not parse parameter aip-base-directory")))
 
   footer("")
 }
