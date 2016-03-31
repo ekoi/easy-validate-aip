@@ -39,7 +39,7 @@ object CommandLineOptions {
     }
     else {
       log.debug("Validate Multiple AIPs...")
-      val fedoraUrl: URL = opts.fedoraServiceUrl()
+      val fedoraUrl = opts.fedoraServiceUrl()
 
       val aipBaseDir = opts.aipBaseDirectory()
 
@@ -61,13 +61,6 @@ class ScallopCommandLine(conf: Config, args: Array[String]) extends ScallopConf(
            |Options:
            |""".stripMargin)
 
-   val shouldExist = singleArgConverter[File](conv = {f =>
-    if (!new File(f).isDirectory) {
-      log.error(s"$f is not an existing directory")
-      throw new IllegalArgumentException()
-    }
-    new File(f)
-  })
   lazy val aipDirectory =
     trailArg[File](
       name = "aip-directory",
