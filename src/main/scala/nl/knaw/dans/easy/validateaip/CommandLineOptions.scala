@@ -49,17 +49,22 @@ class ScallopCommandLine(args: Array[String]) extends ScallopConf(args) {
        |Options:
        | """.stripMargin)
 
-  val aipDirectory = trailArg[File](name = "aip-directory",
-    descr = "Directory that will be validated.",
-    required = false)(fileShouldExist)
+  val aipDirectory = opt[File](name = "aip-directory",
+    short = 'a', descr = "Directory that will be validated.",
+    required = true)(fileShouldExist)
 
-  val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
-    required = false,
-    descr = "URL of Fedora Commons Repository Server to connect to ")
+  val fedoraServiceUrl = opt[URL](name = "fedora-service-url",
+    short = 'f', descr = "URL of Fedora Commons Repository Server to connect to ",
+    required = true)
 
-  val aipBaseDirectory = trailArg[File](name = "aip-base-directory",
-    required = false,
-    descr = "")(fileShouldExist) // TODO fill in this value
+  val aipBaseDirectory = opt[File](name = "aip-base-directory",
+    short = 'b', descr = "", // TODO fill in this value
+    required = true)(fileShouldExist)
+
+  // either aipDirectory or both fedoraServiceUrl and aipBaseDirectory are supplied
+  codependent(fedoraServiceUrl, aipDirectory)
+  mutuallyExclusive(aipDirectory, fedoraServiceUrl)
+  mutuallyExclusive(aipDirectory, aipBaseDirectory)
 
   footer("")
   verify()
@@ -70,15 +75,17 @@ object CommandLineOptions {
 
   def parse(args: Array[String]): Settings = {
     log.debug("Parsing command line ...")
-    val homeDir = new File(System.getProperty("app.home"))
 
     val opts = new ScallopCommandLine(args)
 
-    if (args.length == 1) {
+    if (opts.aipDirectory.isSupplied) {
       log.debug("Validate Single AIP...")
       SingleSettings(opts.aipDirectory())
     }
     else {
+      assert(opts.fedoraServiceUrl.isSupplied)
+      assert(opts.aipBaseDirectory.isSupplied)
+
       log.debug("Validate Multiple AIPs...")
       MultipleSettings(opts.fedoraServiceUrl(), opts.aipBaseDirectory())
     }
