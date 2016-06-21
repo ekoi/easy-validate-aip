@@ -19,67 +19,77 @@ import java.io._
 import java.net.URL
 
 import gov.loc.repository.bagit.BagFactory
-import gov.loc.repository.bagit.utilities.SimpleResult
 import scala.util.{Failure, Success, Try}
 import javax.ws.rs.core.Response.Status
 import org.slf4j.LoggerFactory
 import scalaj.http.Http
 import nl.knaw.dans.easy.validateaip.{CommandLineOptions => cmd}
-
+import scala.collection.JavaConverters._
 
 object EasyValidateAip {
-  implicit val log = LoggerFactory.getLogger(getClass)
-  implicit val bagFactory = new BagFactory
+  val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
     log.debug("Starting application.")
-    implicit val settings: Settings = cmd.parse(args)
+    implicit val settings = cmd.parse(args)
 
-    run match {
-      case Success(_) => log.info("AIP validation SUCCESS")
-      case Failure(t) => log.error("AIP validation FAIL", t)
-    }
+    run.doOnSuccess {
+      case Result(true, _) => log.info("AIP validation SUCCESS")
+      case Result(false, failures) => log.info(s"The following validations failed: ${failures.mkString(", ")}")
+    } doOnError(log.error("AIP validation FAIL", _))
   }
 
   def run(implicit s: Settings): Try[Result] = {
     log.debug(s"Settings = $s")
-    validateAip
-  }
-
-  def validateAip(implicit s: Settings): Try[Result] = {
     s match {
       case SingleSettings(aipDir) => validateSingleAip(aipDir)
-      case MultipleSettings(fedoraUrl, aipBaseDir) => queryUrn(fedoraUrl).map(urns => {
-        log.info(s"Number of urns to be validated: ${urns.size}")
-        val invalidUrns = validateMultiAips(aipBaseDir.getPath, urns)
-        log.info(s"Number of invalid urns: ${invalidUrns.size}")
-        if (invalidUrns.isEmpty)
-          Success(Result(valid = true))
-        else
-          Success(Result(valid = false, invalidUrns))
-      }).getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
+      case MultipleSettings(fedoraUrl, aipBaseDir) =>
+        queryUrn(fedoraUrl)
+          .map(urns => {
+            log.info(s"Number of urns to be validated: ${urns.size}")
+
+            val invalidUrns = validateMultiAips(aipBaseDir.getPath, urns)
+
+            if (invalidUrns.isEmpty) {
+              log.info("All urns are valid!")
+              Success(Result(valid = true))
+            }
+            else {
+              log.info(s"Number of invalid urns: ${invalidUrns.size}")
+              Success(Result(valid = false, invalidUrns))
+            }
+          })
+          .getOrElse(Failure(new RuntimeException("Failed to query fedora resource index.")))
     }
   }
 
   def validateSingleAip(f:File): Try[Result] = {
     log.info(s"Validate bag of ${f.getPath}")
+
     if (!f.exists()) {
       log.info(s"${f.getPath} doesn't exist.")
       return Failure(new RuntimeException(s"${f.getPath} doesn't exist."))
     }
-    val directoryToValidate = f.listFiles().filter(_.isDirectory) //in urn:nbn:xxx directory contains  deposit.properties file, ignore it.
+
+    val directoryToValidate = f.listFiles().filter(_.isDirectory) //in urn:nbn:xxx directory contains deposit.properties file, ignore it.
+
     if (directoryToValidate.isEmpty)
       Failure(new RuntimeException(s"${f.getPath} directory is empty."))
-    else if (directoryToValidate.length == 1) {
-      val bag = bagFactory.createBag(directoryToValidate(0), BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
-      val validationResult: SimpleResult = bag.verifyValid()
-      if (validationResult.isSuccess) Success(Result(valid = true))
-      else Success(Result(valid = false, List(f.getPath)))
-    }
-    else
+    else if (directoryToValidate.length > 1)
       Failure(new RuntimeException(s"${f.getPath} directory contains multiple directories."))
-  }
+    else {
+      val bagFactory = new BagFactory
+      val bag = bagFactory.createBag(directoryToValidate.head, BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)
+      val result = bag.verifyValid()
 
+      if (result.isSuccess)
+        Success(Result(valid = true))
+      else {
+        result.getMessages.asScala.foreach(println)
+        Success(Result(valid = false, List(f.getPath)))
+      }
+    }
+  }
 
   def validateMultiAips(aipBaseDir: String, urns: List[String]) : List[String] = {
     log.debug("Validate multiple AIPs")
@@ -112,10 +122,6 @@ object EasyValidateAip {
     if (!response.code.equals(Status.OK.getStatusCode))
       throw new RuntimeException(s"Failed to query fedora resource index ($url), response code: ${response.code}")
 
-    response.body.lines.toList.drop(1)
-      .map(_.replace("info:fedora/", ""))
+    response.body.lines.toList.drop(1).map(_.replace("info:fedora/", ""))
   }
-
-
-  case class Result(valid: Boolean, invalidAips: List[String] = List())
 }
