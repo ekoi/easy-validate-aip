@@ -15,12 +15,10 @@
  */
 package nl.knaw.dans.easy.validateaip
 
-import java.net.URL
-
-import nl.knaw.dans.easy.validateaip.EasyValidateAip.{validateSingleAip, validateMultiAips}
-import org.scalatest.{Matchers, FlatSpec, FunSuite}
-
 import java.io.File
+
+import nl.knaw.dans.easy.validateaip.EasyValidateAip.{validateMultiAips, validateSingleAip}
+import org.scalatest.{FlatSpec, Matchers}
 
 
 class EasyValidateAipSpec extends FlatSpec with Matchers {
@@ -43,8 +41,9 @@ class EasyValidateAipSpec extends FlatSpec with Matchers {
   }
 
   "validateMultiAips" should "succeed" in {
-    validateMultiAips("src/test/resources/multiple/valid-bagit", mockUrnQueryResponseValidBagit).size shouldBe 0
+    validateMultiAips("src/test/resources/multiple/valid-bagit", mockUrnQueryResponseValidBagit()).size shouldBe 0
   }
+
   def mockUrnQueryResponseValidBagit():List[String]={
     List("urn:nbn:nl:ui:13-5xhe-sn", "urn:nbn:nl:ui:13-6eub-aq", "urn:nbn:nl:ui:13-6xee-rq")
   }
