@@ -35,38 +35,43 @@ class ScallopCommandLine(args: Array[String]) extends ScallopConf(args) {
     new File(f)
   })
 
-  printedName = "ValidateAip"
+  printedName = "validateAip"
   version(s"$printedName ${Version()}")
   banner(
     s"""
        |Validate one or more AIPs in (dark) archival storage.
        |
+       |When validating a single AIP the directory containing the AIP is passed as an argument.
+       |The program reports back a message stating whether the bag is valid.
+       |
+       |To validate all the AIPs registered in an EASY Fedora 3.x repository the service URL
+       |of the repository and the base directory containing all the AIPs are passed as arguments.
+       |The program queries Fedora's Resource Index for all the datasets that have the relation
+       |http://dans.knaw.nl/ontologies/relations#storedInDarkArchive set to true.
+       |From these datasets the [URN:NBN] identifier is retrieved. This identifier is used to
+       |find the AIP directory in the AIP base directory.
+       |
        |Usage:
        |
-       | $printedName <aip-directory>
-       | $printedName <Fedora service URL> <aip-base-directory>
+       | single:     $printedName -a <aip-directory>
+       | multiple:   $printedName -f <Fedora service URL> -b <aip-base-directory>
        |
        |Options:
        | """.stripMargin)
 
   val aipDirectory = opt[File](name = "aip-directory",
-    short = 'a', descr = "Directory that will be validated.",
-    required = true)(fileShouldExist)
+    short = 'a', descr = "Directory that will be validated.")(fileShouldExist)
 
   val fedoraServiceUrl = opt[URL](name = "fedora-service-url",
-    short = 'f', descr = "URL of Fedora Commons Repository Server to connect to ",
-    required = true)
+    short = 'f', descr = "URL of Fedora Commons Repository Server to connect to ")
 
   val aipBaseDirectory = opt[File](name = "aip-base-directory",
-    short = 'b', descr = "", // TODO fill in this value
-    required = true)(fileShouldExist)
+    short = 'b', descr = "Base directory containing all the AIPs")(fileShouldExist)
 
   // either aipDirectory or both fedoraServiceUrl and aipBaseDirectory are supplied
-  codependent(fedoraServiceUrl, aipDirectory)
-  mutuallyExclusive(aipDirectory, fedoraServiceUrl)
-  mutuallyExclusive(aipDirectory, aipBaseDirectory)
+  codependent(fedoraServiceUrl, aipBaseDirectory)
+  conflicts(aipDirectory, fedoraServiceUrl :: aipBaseDirectory :: Nil)
 
-  footer("")
   verify()
 }
 
