@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ddm:DDM
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:dcmitype="http://purl.org/dc/dcmitype/"
+        xmlns:narcis="http://easy.dans.knaw.nl/schemas/vocab/narcis-type/"
+        xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/"
+        xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
+        xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+        xmlns:dcterms="http://purl.org/dc/terms/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd
+            http://easy.dans.knaw.nl/schemas/vocab/identifier-type/ https://easy.dans.knaw.nl/schemas/vocab/2015/identifier-type.xsd">
+    <ddm:profile>
+        <dc:title>Test dataset 270116134002402</dc:title>
+        <dcterms:description>Test description and other details that we may need data.mendeley.com 270116134002402</dcterms:description>
+        <dcx-dai:creatorDetails>
+            <dcx-dai:author>
+                <dcx-dai:initials>Jaleel</dcx-dai:initials>
+                <dcx-dai:surname>Beatty</dcx-dai:surname>
+            </dcx-dai:author>
+        </dcx-dai:creatorDetails>
+        <ddm:created>2016-01-27T13:40:03.340Z</ddm:created>
+        <ddm:audience>D10000</ddm:audience>
+        <ddm:accessRights>NO_ACCESS</ddm:accessRights>
+    </ddm:profile>
+    <ddm:dcmiMetadata>
+        <dcterms:identifier xsi:type="id-type:DOI">10.4124/xhhpz7bxhd.1</dcterms:identifier>
+        <dcterms:identifier>xhhpz7bxhd</dcterms:identifier>
+        <dcterms:hasVersion>1</dcterms:hasVersion>
+        <dcterms:modified>2016-01-27T13:40:03.340Z</dcterms:modified>
+        <dcterms:issued>2016-01-27T13:40:03.340Z</dcterms:issued>
+        <dcterms:license xsi:type="dcterms:URI">http://creativecommons.org/licenses/by/4.0</dcterms:license>
+        <dcterms:rightsHolder>Jaleel Beatty</dcterms:rightsHolder>
+    </ddm:dcmiMetadata>
+</ddm:DDM>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ddm:DDM
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:dcmitype="http://purl.org/dc/dcmitype/"
+        xmlns:narcis="http://easy.dans.knaw.nl/schemas/vocab/narcis-type/"
+        xmlns:id-type="http://easy.dans.knaw.nl/schemas/vocab/identifier-type/"
+        xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
+        xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+        xmlns:dcterms="http://purl.org/dc/terms/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd
+            http://easy.dans.knaw.nl/schemas/vocab/identifier-type/ https://easy.dans.knaw.nl/schemas/vocab/2015/identifier-type.xsd">
+    <ddm:profile>
+        <dc:title>Test dataset 270116125405064</dc:title>
+        <dcterms:description>Test description and other details that we may need data.mendeley.com 270116125405064</dcterms:description>
+        <dcx-dai:creatorDetails>
+            <dcx-dai:author>
+                <dcx-dai:initials>Carli</dcx-dai:initials>
+                <dcx-dai:surname>Metz</dcx-dai:surname>
+            </dcx-dai:author>
+        </dcx-dai:creatorDetails>
+        <ddm:created>2016-01-27T12:54:07.216Z</ddm:created>
+        <ddm:audience>D10000</ddm:audience>
+        <ddm:accessRights>NO_ACCESS</ddm:accessRights>
+    </ddm:profile>
+    <ddm:dcmiMetadata>
+        <dcterms:identifier xsi:type="id-type:DOI">10.4124/tz6d3c4ykv.2</dcterms:identifier>
+        <dcterms:identifier>tz6d3c4ykv</dcterms:identifier>
+        <dcterms:hasVersion>2</dcterms:hasVersion>
+        <dcterms:modified>2016-01-27T12:54:07.216Z</dcterms:modified>
+        <dcterms:issued>2016-01-27T12:54:07.216Z</dcterms:issued>
+        <dcterms:license xsi:type="dcterms:URI">http://creativecommons.org/licenses/by/4.0</dcterms:license>
+        <dcterms:rightsHolder>Carli Metz</dcterms:rightsHolder>
+    </ddm:dcmiMetadata>
+</ddm:DDM>

@@ -6,8 +6,8 @@ Validate one or more AIPs in (dark) archival storage
 SYNOPSIS
 --------
 
-    easy-validate-aip <aip-directory>
-    easy-validate-aip --fcrepo-user <user> --fcrepo-password <password> <Fedora service URL> <aip-base-directory>
+    single:     validateAip -a <aip-directory>
+    multiple:   validateAip -f <Fedora service URL> -b <aip-base-directory>
     
 DESCRIPTION
 -----------
@@ -33,11 +33,29 @@ This identifier is used to find the AIP directory in the AIP base directory.
 ARGUMENTS
 ---------
 
+    Usage:
+    
+     single:     validateAip -a <aip-directory>
+     multiple:   validateAip -f <Fedora service URL> -b <aip-base-directory>
+    
+    Options:
+    
+      -b, --aip-base-directory  <arg>   Base directory containing all the AIPs
+      -a, --aip-directory  <arg>        Directory that will be validated.
+      -f, --fedora-service-url  <arg>   URL of Fedora Commons Repository Server to connect to
+          --help                        Show help message
+          --version                     Show version of this program
 
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
 
+1. Unzip the tarball to a directory of your choice, e.g. /opt/
+2. A new directory called easy-validate-aip-<version> will be created
+3. Add the command script to your `PATH` environment variable by creating a symbolic link to it from a directory that is
+   on the path, e.g. 
+   
+        ln -s /opt/easy-validate-aip-<version>/bin/easy-validate-aip /usr/bin
 
 
 BUILDING FROM SOURCE
